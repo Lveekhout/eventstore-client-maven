@@ -4,6 +4,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import nl.lveekhout.eventstore.Adres;
 import nl.lveekhout.eventstore.AdresStream;
+import nl.lveekhout.eventstore.Entry;
 import nl.lveekhout.eventstore.Stream;
 
 import javax.ws.rs.core.MediaType;
@@ -14,9 +15,11 @@ import javax.ws.rs.core.MediaType;
  */
 public class AdresStreamGES implements AdresStream {
 
+    private String host = null;
     private String stream = null;
 
-    public AdresStreamGES(String stream) {
+    public AdresStreamGES(String host, String stream) {
+        this.host = host;
         this.stream = stream;
     }
 
@@ -28,8 +31,8 @@ public class AdresStreamGES implements AdresStream {
     public Stream zoekAdressen() {
         Client client = Client.create(JerseyClientConfig.getClientConfig());
         ClientResponse clientResponse = client
-                .resource("http://localhost:2113/streams/" + stream)
-                .accept(MediaType.APPLICATION_JSON)
+                .resource(String.format("http://%s/streams/%s", host, stream))
+                .accept("application/vnd.eventstore.atom+json")
                 .get(ClientResponse.class);
         if (clientResponse.getStatus() == 200) {
             return clientResponse.getEntity(Stream.class);
@@ -39,7 +42,30 @@ public class AdresStreamGES implements AdresStream {
     }
 
     @Override
-    public Adres haalAdres() {
-        return null;
+    public Adres haalAdres(String url) {
+        Client client = Client.create(JerseyClientConfig.getClientConfig());
+        ClientResponse clientResponse = client
+                .resource(url)
+                .accept(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+        if (clientResponse.getStatus() == 200) {
+            return clientResponse.getEntity(Adres.class);
+        } else {
+            throw new RuntimeException("Ongeldige status: " + clientResponse.getStatus());
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        Stream stream1 = zoekAdressen();
+        builder.append(String.format("%s\n", stream1.getTitle()));
+        for (Entry entry : stream1.getEntries()) {
+            builder.append(String.format("\t- %s\n", entry.getId()));
+            builder.append(String.format("\t\t- %s\n", haalAdres(entry.getId())));
+        }
+
+        return builder.toString();
     }
 }

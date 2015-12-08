@@ -8,5 +8,5 @@ public interface AdresStream {
 
     void registreerAdres(Adres adres);
     Stream zoekAdressen();
-    Adres haalAdres();
+    Adres haalAdres(String url);
 }
