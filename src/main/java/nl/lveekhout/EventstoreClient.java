@@ -1,7 +1,6 @@
 package nl.lveekhout;
 
 import nl.lveekhout.eventstore.Adres;
-import nl.lveekhout.eventstore.Stream;
 import nl.lveekhout.geteventstore.rest.AdresStreamGES;
 
 import java.util.UUID;
@@ -28,6 +27,9 @@ public class EventstoreClient {
             System.out.printf("%s\n", ges.toString());
         } else if (args[2].equals("uuid")) {
             System.out.printf("UUID(): [%s]\n", UUID.randomUUID());
+        } else if (args[2].equals("post")) {
+            AdresStreamGES ges = new AdresStreamGES(args[0], args[1]);
+            ges.registreerAdres(new Adres(args[3], args[4], args[5], args[6]));
         } else {
             System.out.printf("Onbekend commando: [%s]\n", args[2]);
         }

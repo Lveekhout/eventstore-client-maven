@@ -2,12 +2,12 @@ package nl.lveekhout.geteventstore.rest;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import nl.lveekhout.eventstore.Adres;
-import nl.lveekhout.eventstore.AdresStream;
-import nl.lveekhout.eventstore.Entry;
-import nl.lveekhout.eventstore.Stream;
+import nl.lveekhout.eventstore.*;
 
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by eekhout.l on 08-12-2015.
@@ -25,6 +25,17 @@ public class AdresStreamGES implements AdresStream {
 
     @Override
     public void registreerAdres(Adres adres) {
+        List<AdresEvent> events = new ArrayList<>();
+        events.add(new AdresEvent(UUID.randomUUID().toString(), "adres-event", adres));
+
+        Client client = Client.create(JerseyClientConfig.getClientConfig());
+        ClientResponse clientResponse = client
+                .resource(String.format("http://%s/streams/%s", host, stream))
+                .entity(events, "application/vnd.eventstore.events+json")
+                .post(ClientResponse.class);
+        if (clientResponse.getStatus() != 201) {
+            throw new RuntimeException("Ongeldige status: " + clientResponse.getStatus());
+        }
     }
 
     @Override

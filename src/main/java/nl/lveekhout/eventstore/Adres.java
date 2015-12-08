@@ -13,6 +13,16 @@ public class Adres {
     private String huisnummer;
     private String woonplaats;
 
+    public Adres() {
+    }
+
+    public Adres(String naam, String straatnaam, String huisnummer, String woonplaats) {
+        this.naam = naam;
+        this.straatnaam = straatnaam;
+        this.huisnummer = huisnummer;
+        this.woonplaats = woonplaats;
+    }
+
     public String getNaam() {
         return naam;
     }
